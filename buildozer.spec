@@ -5,7 +5,7 @@ package.domain = org.ejemplo
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,ttf
 version = 0.1
-requirements = python3==3.11.9,kivy==2.3.1
+requirements = hostpython3==3.11.9,python3==3.11.9,kivy==2.3.1
 orientation = portrait
 fullscreen = 0
 android.archs = arm64-v8a, armeabi-v7a
