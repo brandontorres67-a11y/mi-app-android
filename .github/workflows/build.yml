@@ -1,8 +1,8 @@
-name: Compilar APK
+name: Compilar APK Debug
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -13,28 +13,36 @@ jobs:
       - name: Descargar código
         uses: actions/checkout@v4
 
-      - name: Configurar Python 3.11
+      - name: Configurar Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Instalar dependencias del sistema
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk python3-pip autoconf libtool \
-            pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev \
-            libtinfo5 cmake libffi-dev libssl-dev ccache lld
+            build-essential git zip unzip openjdk-17-jdk \
+            autoconf libtool pkg-config zlib1g-dev \
+            libncurses5-dev libncursesw5-dev libtinfo6 \
+            cmake libffi-dev libssl-dev automake
 
       - name: Instalar Buildozer y Cython compatible
         run: |
           pip install --upgrade pip
-          pip install buildozer cython==3.0.11
+          pip install "cython<3.0" buildozer virtualenv
 
-      - name: Compilar APK Debug
-        run: buildozer -v android debug
+      - name: Compilar APK con Buildozer
+        run: |
+          yes | buildozer -v android debug
+
+      - name: Mostrar error detallado si falla
+        if: failure()
+        run: |
+          find .buildozer -name "*.log" -exec tail -n 80 {} +
 
       - name: Subir APK generado
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
