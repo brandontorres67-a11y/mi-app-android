@@ -8,21 +8,32 @@ on:
 jobs:
   build-android:
     name: Build for Android
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
 
-      - name: Compilar con Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Configurar Python
+        uses: actions/setup-python@v5
         with:
-          workdir: .
-          buildozer_version: stable
+          python-version: '3.11'
+
+      - name: Instalar dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf automake libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev build-essential patch
+
+      - name: Instalar Buildozer
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install buildozer cython
+
+      - name: Compilar APK
+        run: yes | buildozer -v android debug
 
       - name: Subir APK generado
         uses: actions/upload-artifact@v4
         with:
           name: paquete-android
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
